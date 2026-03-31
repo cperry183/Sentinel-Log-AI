@@ -1,0 +1,10 @@
+Jan 21 12:00:01 hms-prod-01 systemd: Started Session 123 of user root.
+Jan 21 12:01:15 hms-prod-02 kernel: x86/fpu: Supporting XSAVE feature 0x002.
+Jan 21 12:02:30 hms-prod-03 ntpd[1402]: Receive time set: +0.000004s.
+Jan 21 12:05:42 hms-prod-452 sshd: WARNING: repeated login attempts from unauthorized IP 192.168.1.50 - Potential Brute Force.
+Jan 21 12:08:12 hms-prod-05 CRON[2041]: (root) CMD (run-parts /etc/cron.hourly)
+Jan 21 12:10:10 hms-prod-01 kernel: CRITICAL: CPU temperature above 95C - hardware throttling initiated.
+Jan 21 12:12:45 hms-prod-07 postfix/cleanup[3201]: A12B3C4D5E: message-id=<202601211212@hms.edu>
+Jan 21 12:15:22 hms-prod-452 kernel: ALERT: Out of memory (OOM-Kill process 5902 'python3').
+Jan 21 12:18:05 hms-prod-12 systemd: Stopping User Manager for UID 1001.
+Jan 21 12:20:33 hms-prod-22 sshd: Accepted publickey for admin from 10.0.5.15 port 54322 ssh2.

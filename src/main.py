@@ -1,55 +1,75 @@
 import torch
+import os
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-from sklearn.preprocessing import LabelEncoder
 
 class LogAnomalyDetector:
     def __init__(self, model_name="bert-base-uncased"):
         """
-        Initializes the AI model. For a GitHub portfolio, using a 
-        Transformer demonstrates modern NLP knowledge.
+        Initializes the AI model. Using a Transformer model like BERT 
+        demonstrates the 'Mathematical Maturity' required by UT Austin.
         """
+        print(f"Initializing {model_name}...")
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        # We assume 2 classes: 0 = Normal, 1 = Anomaly (Security Threat/System Failure)
+        # 2 Classes: 0 = Normal, 1 = Anomaly
         self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
         
     def preprocess_logs(self, log_messages):
         """
-        Converts raw log strings into tensors the AI can understand.
+        Converts raw log strings into numerical tensors.
         """
         return self.tokenizer(
             log_messages, 
             padding=True, 
             truncation=True, 
+            max_length=128,
             return_tensors="pt"
         )
 
     def predict(self, log_samples):
         """
-        Runs inference to detect anomalies.
+        Runs neural inference to classify logs.
         """
         self.model.eval()
         inputs = self.preprocess_logs(log_samples)
         
         with torch.no_grad():
             outputs = self.model(**inputs)
-            predictions = torch.argmax(outputs.logits, dim=1)
+            # Apply Softmax to get probabilities (Math concept relevant to AI)
+            probabilities = torch.nn.functional.softmax(outputs.logits, dim=1)
+            predictions = torch.argmax(probabilities, dim=1)
         
-        results = ["ANOMALY DETECTED" if pred == 1 else "Normal" for pred in predictions]
-        return results
+        return predictions, probabilities
 
-# Example Usage for your Portfolio:
-if __name__ == "__main__":
+def run_analysis():
+    # 1. Initialize the Detector
     detector = LogAnomalyDetector()
     
-    # Mock logs simulating your SRE experience at Harvard/IBM
-    raw_logs = [
-        "Jan 21 12:00:01 hms-prod-01 systemd: Started Session 123 of user root.",
-        "Jan 21 12:05:42 hms-prod-452 sshd: Extreme failure: repeated login attempts from unauthorized IP 192.168.1.50",
-        "Jan 21 12:10:10 hms-prod-01 kernel: CPU temperature above threshold, throttling initiated."
-    ]
+    # 2. Path to your data file
+    file_path = "data/sample_data.txt"
     
-    print("Analyzing Infrastructure Logs...")
-    analysis = detector.predict(raw_logs)
+    # 3. Check if file exists and run
+    if not os.path.exists(file_path):
+        print(f" [!] Error: {file_path} not found.")
+        return
+
+    with open(file_path, "r") as f:
+        # Filter out empty lines
+        raw_logs = [line.strip() for line in f.readlines() if line.strip()]
+
+    print(f"\n--- Starting Analysis of {len(raw_logs)} Log Entries ---\n")
     
-    for log, result in zip(raw_logs, analysis):
-        print(f"[{result}] - {log}")
+    predictions, probs = detector.predict(raw_logs)
+
+    # 4. Display Results with "Confidence" scores
+    # Showing the probability score demonstrates an understanding of Statistics
+    for i, log in enumerate(raw_logs):
+        label = "ANOMALY" if predictions[i] == 1 else "NORMAL"
+        confidence = probs[i][predictions[i]].item() * 100
+        
+        status_icon = "🛑" if label == "ANOMALY" else "✅"
+        
+        print(f"{status_icon} [{label}] (Conf: {confidence:.2f}%)")
+        print(f"    Log: {log}\n")
+
+if __name__ == "__main__":
+    run_analysis()
