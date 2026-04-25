@@ -1,0 +1,33 @@
+services:
+  sentinel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sentinel-log-ai:latest
+    container_name: sentinel-log-ai
+
+    # Mount your own log directory and a persistent model cache
+    volumes:
+      - ./data:/app/data                              # swap in live log files
+      - sentinel-model-cache:/app/.cache/huggingface  # persists downloaded BERT weights
+
+    environment:
+      # HuggingFace — point to a local mirror or leave blank for default hub
+      - HF_ENDPOINT=${HF_ENDPOINT:-}
+      # Limit PyTorch CPU threads if running alongside other workloads
+      - OMP_NUM_THREADS=${OMP_NUM_THREADS:-4}
+      - TOKENIZERS_PARALLELISM=false                  # suppresses HF fork warning
+
+    # Restart on failure but not on clean exit (model finishes and exits 0)
+    restart: on-failure:3
+
+    # Tighten the runtime security surface
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp                                          # writable scratch space
+
+volumes:
+  sentinel-model-cache:
+    driver: local
